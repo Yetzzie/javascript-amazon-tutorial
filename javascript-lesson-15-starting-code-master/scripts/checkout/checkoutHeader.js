@@ -11,5 +11,4 @@ export function checkoutHeader() {
 
   document.querySelector('.js-check-out').innerHTML = checkoutHTML;
 
-  return checkoutHTML;
 }

@@ -1,7 +1,7 @@
 import {cart, removeFromCart, updateDeliveryOption} from '../../data/cart.js';
 import {products, getProduct} from '../../data/products.js';
 import {formatCurrency} from '../utils/money.js';
-import {delivery, getDeliveryOption} from '../../data/deliverytime.js';
+import {delivery, getDeliveryOption, calculateDeliveryDate} from '../../data/deliverytime.js';
 import dayjs from 'https://unpkg.com/dayjs@1.11.10/esm/index.js';
 import { renderPaymentSummary } from './paymentsummer.js';
 import { checkoutHeader } from './checkoutHeader.js';
@@ -14,14 +14,9 @@ export function renderOrderSummary() {
     const productId = cartItem.productId;
 
   const matchingProduct = getProduct(productId);
-
-    const deliveryOptionId = cartItem.deliveryOption;
-
-    const err = getDeliveryOption(deliveryOptionId);
-
-    const today = dayjs();
-    const deliveryDate = today.add(err.deliveryDays, 'days');
-    const dateStrings = deliveryDate.format('dddd, MMMM D');
+  const deliveryOptionId = cartItem.deliveryOption;
+  const err = getDeliveryOption(deliveryOptionId);
+  const dateStrings = calculateDeliveryDate(err);
 
     cartSummaryHTML += `
       <div class="cart-item-container
@@ -71,13 +66,10 @@ export function renderOrderSummary() {
 
     delivery.forEach((err)=>{
       //this were the external library use which is dayjs
-    const today = dayjs();
-    const deliveryDate = today.add(err.deliveryDays, 'days');
-    const dateStrings = deliveryDate.format('dddd, MMMM D');
-    const priceString = delivery.priceCent === 0 ? 'FREE' : `$${formatCurrency(err.priceCent)} -`;
-      //this is were we check if a checkbox were checked
-      const isChecked = err.id === cartItem.deliveryOption;
-
+    const priceString = err.priceCent === 0 ? 'FREE' : `$${formatCurrency(err.priceCent)} -`;
+    const isChecked = err.id === cartItem.deliveryOption;
+    const dateStrings = calculateDeliveryDate(err);
+      
       html +=`
       <div class="delivery-option js-delivery-option" data-product-id="${matchingProduct.id}" data-delivery-option="${err.id}">
           <input type="radio" ${isChecked ? 'checked' : ''}
